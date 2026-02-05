@@ -29,14 +29,20 @@ function enrichAccount(accounts, currentAccount) {
 }
 
 function getScrapFrom(account) {
-  if (account.lastImport) {
-    return moment(account.lastImport)
-      .subtract(7, 'days');
+  let fallback = account.lastImport
+    ? moment(account.lastImport).subtract(7, 'days')
+    : moment().subtract('5', 'years');
+
+  // Optional global minimum start date (limits how far back we scrape)
+  const configuredStart = config.get('scraper:startDate');
+  if (configuredStart) {
+    const configuredMoment = moment(configuredStart, moment.ISO_8601, true);
+    if (configuredMoment.isValid() && fallback.isBefore(configuredMoment)) {
+      fallback = configuredMoment;
+    }
   }
 
-  // Fallback to 5y ago
-  return moment()
-    .subtract('5', 'years');
+  return fallback;
 }
 
 export function getFlatUsers(useOnlyAccounts, state, since) {

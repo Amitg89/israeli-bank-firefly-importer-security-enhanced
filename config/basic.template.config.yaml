@@ -26,3 +26,8 @@ banks:
 # Cron - If set, keep the app working and execute by crontab (Optional, default unset).
 #cron: '0 0 7 * * *' # Run every day at 7am
 
+# Scraper options (Optional)
+scraper:
+  # Optional: limit how far back to scrape (ISO date)
+  # startDate: '2021-01-01'
+

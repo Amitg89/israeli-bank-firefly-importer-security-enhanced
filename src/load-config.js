@@ -12,6 +12,7 @@ const envMap = {
   CRON: 'cron',
   SCRAPER_PARALLEL: 'scraper:parallel',
   SCRAPER_TIMEOUT: 'scraper:timeout',
+  SCRAPER_START_DATE: 'scraper:startDate',
   LOG_LEVEL: 'log:level',
 };
 
