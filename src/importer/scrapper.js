@@ -36,12 +36,19 @@ function getScrapFrom(account) {
   // Optional global minimum start date (limits how far back we scrape)
   const configuredStart = config.get('scraper:startDate');
   if (configuredStart) {
-    const configuredMoment = moment(configuredStart, moment.ISO_8601, true);
+    const configuredMoment = moment(configuredStart);
     if (configuredMoment.isValid() && fallback.isBefore(configuredMoment)) {
       fallback = configuredMoment;
     }
   }
 
+  if (logger().level === 'debug') {
+    logger().debug({
+      accountType: account.type,
+      scrapFrom: fallback.toISOString(),
+      configuredStartDate: configuredStart || null,
+    }, 'Scrap start date');
+  }
   return fallback;
 }
 
