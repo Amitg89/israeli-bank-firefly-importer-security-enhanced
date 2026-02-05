@@ -149,6 +149,27 @@ For the full support list, see the [Israeli Bank Scrapers documentation](https:/
 | `FIREFLY_BASE_URL` | Firefly III base URL |
 | `FIREFLY_TOKEN_API` | Firefly III API token |
 | `CRON` | Cron expression for scheduling |
+| `SCRAPER_START_DATE` | Global scrape start date (ISO, e.g. `2025-01-01`) to limit how far back to fetch |
+| `SCRAPER_TIMEOUT` | Navigation timeout in ms (default 30000). Increase if you see "Navigation timeout exceeded" |
+| `LOG_LEVEL` | Log level (e.g. `debug`, `info`) |
+
+### Scraper start date and timeout
+
+To avoid timeouts when adding a new credit card (the first run scrapes up to 5 years by default), you can:
+
+- **Global:** Set `scraper.startDate` and/or `scraper.timeout` in `config.yaml`, or use env vars `SCRAPER_START_DATE` and `SCRAPER_TIMEOUT`.
+- **Per account:** Set `startDate` and/or `timeout` on a specific bank or credit card in `config.yaml`, e.g. for a slow Isracard scrape:
+
+```yaml
+banks:
+  - type: leumi
+    credentials: { ... }
+    creditCards:
+      - type: isracard
+        startDate: '2025-01-01'   # Only last year; avoids long scrape
+        timeout: 60000            # 60s navigation timeout
+        credentials: { ... }
+```
 
 ---
 

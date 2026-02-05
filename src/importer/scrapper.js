@@ -5,12 +5,14 @@ import logger from '../logger.js';
 import { getLastImport } from './last-import-helper.js';
 import manipulateScrapResult from './scrap-manipulater/index.js';
 
-function toUserOptions(creditCard, index) {
+function toUserOptions(item, index) {
   return {
-    type: creditCard.type,
-    credentials: creditCard.credentials,
-    parentBankIndex: index,
-    name: creditCard.name,
+    type: item.type,
+    credentials: item.credentials,
+    ...(index !== undefined && { parentBankIndex: index }),
+    name: item.name,
+    startDate: item.startDate,
+    timeout: item.timeout,
   };
 }
 
@@ -31,7 +33,7 @@ function enrichAccount(accounts, currentAccount) {
 function getScrapFrom(account) {
   let fallback = account.lastImport
     ? moment(account.lastImport).subtract(7, 'days')
-    : moment().subtract('5', 'years');
+    : moment().subtract(5, 'years');
 
   // Optional global minimum start date (limits how far back we scrape)
   const configuredStart = config.get('scraper:startDate');
@@ -42,11 +44,20 @@ function getScrapFrom(account) {
     }
   }
 
+  // Per-account start date (e.g. limit Isracard to 1 year to avoid timeout)
+  if (account.startDate) {
+    const accountStart = moment(account.startDate);
+    if (accountStart.isValid() && fallback.isBefore(accountStart)) {
+      fallback = accountStart;
+    }
+  }
+
   if (logger().level === 'debug') {
     logger().debug({
       accountType: account.type,
       scrapFrom: fallback.toISOString(),
       configuredStartDate: configuredStart || null,
+      accountStartDate: account.startDate || null,
     }, 'Scrap start date');
   }
   return fallback;
@@ -118,6 +129,10 @@ export async function scrapAccounts(flatUsers) {
         companyId: CompanyTypes[user.type],
         startDate: user.scrapFrom.toDate(),
         ...scraperConfig.options,
+        // Timeout: per-account overrides global (israeli-bank-scrapers: max navigation ms, default 30000)
+        ...(typeof (user.timeout ?? scraperConfig.timeout) === 'number' && {
+          timeout: user.timeout ?? scraperConfig.timeout,
+        }),
       };
 
       return () => scrape(options, user.credentials);

@@ -4,6 +4,12 @@
   "description": "Using Israeli bank scrapper and import the data into free and open source FireFly iii.",
   "main": "src/index.js",
   "type": "module",
+  "files": [
+    "src",
+    "config",
+    "package.json",
+    "package-lock.json"
+  ],
   "engines": {
     "node": ">= 18.0.0"
   },

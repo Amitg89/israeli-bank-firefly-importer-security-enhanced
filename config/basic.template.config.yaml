@@ -13,6 +13,10 @@ banks:
     credentials:
       username: 'my-username'
       password: 'my-password'
+    # Optional: limit how far back to scrape for this bank (ISO date). Overrides global scraper.startDate.
+    # startDate: '2025-01-01'
+    # Optional: navigation timeout in ms for this bank (default 30000). Use higher value if scraping times out.
+    # timeout: 60000
     # Credit cards list that processed in the bank
     creditCards:
       # Type of the credit card type (isracard, visaCal, max, amex)
@@ -22,12 +26,18 @@ banks:
           id: '123456789'
           card6Digits: '123456'
           password: 'my-password'
+        # Optional: limit how far back to scrape for this card (ISO date). Helps avoid timeout on first run.
+        # startDate: '2025-01-01'
+        # Optional: navigation timeout in ms for this card (default 30000).
+        # timeout: 60000
 
 # Cron - If set, keep the app working and execute by crontab (Optional, default unset).
 #cron: '0 0 7 * * *' # Run every day at 7am
 
 # Scraper options (Optional)
 scraper:
-  # Optional: limit how far back to scrape (ISO date)
-  # startDate: '2021-01-01'
+  # Optional: global limit how far back to scrape (ISO date). Use per-account startDate for finer control.
+  # startDate: '2025-01-01'
+  # Optional: global navigation timeout in ms (default 30000). Use per-account timeout for finer control.
+  # timeout: 60000
 

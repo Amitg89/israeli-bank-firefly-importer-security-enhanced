@@ -29,7 +29,10 @@ scraper:
     - '--headless'
     - '--single-process'
   parallel: true
+  # Navigation timeout in ms (default 30000). Increase if you get "Navigation timeout exceeded".
   timeout: 60000
+  # Optional: global start date (ISO) to limit how far back to scrape.
+  # startDate: '2025-01-01'
 
 log:
   level: debug

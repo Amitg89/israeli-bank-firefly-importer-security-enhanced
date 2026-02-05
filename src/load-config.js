@@ -142,6 +142,14 @@ export default async function loadConfig(path) {
   }
   if (process.env.CRON) envOverrides.cron = process.env.CRON;
   if (process.env.LOG_LEVEL) envOverrides.log = { level: process.env.LOG_LEVEL };
+  if (process.env.SCRAPER_TIMEOUT || process.env.SCRAPER_START_DATE) {
+    const base = envOverrides.scraper || config.get('scraper') || {};
+    envOverrides.scraper = {
+      ...base,
+      ...(process.env.SCRAPER_TIMEOUT && { timeout: parseInt(process.env.SCRAPER_TIMEOUT, 10) }),
+      ...(process.env.SCRAPER_START_DATE && { startDate: process.env.SCRAPER_START_DATE }),
+    };
+  }
   if (Object.keys(envOverrides).length > 0) {
     config.overrides(envOverrides);
   }
