@@ -48,6 +48,12 @@ try {
     schedule(cron, run);
   }
 } catch (err) {
-  logger()
-    .error(err, 'Critical error');
+  // Always print to stderr so addon/container logs show the error even if logger not inited
+  console.error('Critical error:', err?.message || err);
+  try {
+    logger().error(err, 'Critical error');
+  } catch (_) {
+    console.error(err);
+  }
+  process.exitCode = 1;
 }
