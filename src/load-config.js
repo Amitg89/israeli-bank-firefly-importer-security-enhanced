@@ -129,8 +129,23 @@ export default async function loadConfig(path) {
       file: path,
       format: nconfYaml,
     })
-    .defaults(require('../config/default.json'))
-    .required(['firefly', 'firefly:baseUrl', 'firefly:tokenApi', 'banks']);
+    .defaults(require('../config/default.json'));
+
+  // Ensure Firefly and cron from env are applied (addon / Docker pass these)
+  if (process.env.FIREFLY_BASE_URL) {
+    config.set('firefly:baseUrl', process.env.FIREFLY_BASE_URL);
+  }
+  if (process.env.FIREFLY_TOKEN_API) {
+    config.set('firefly:tokenApi', process.env.FIREFLY_TOKEN_API);
+  }
+  if (process.env.CRON) {
+    config.set('cron', process.env.CRON);
+  }
+  if (process.env.LOG_LEVEL) {
+    config.set('log:level', process.env.LOG_LEVEL);
+  }
+
+  config.required(['firefly', 'firefly:baseUrl', 'firefly:tokenApi', 'banks']);
 
   // Apply environment variable overrides for credentials
   // (These take precedence over config file values)
