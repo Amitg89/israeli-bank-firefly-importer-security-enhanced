@@ -131,18 +131,18 @@ export default async function loadConfig(path) {
     })
     .defaults(require('../config/default.json'));
 
-  // Ensure Firefly and cron from env are applied (addon / Docker pass these)
-  if (process.env.FIREFLY_BASE_URL) {
-    config.set('firefly:baseUrl', process.env.FIREFLY_BASE_URL);
+  // Apply env as top-priority overrides so addon/Docker env vars are always used (nconf .set() is not reliable across the chain)
+  const envOverrides = {};
+  if (process.env.FIREFLY_BASE_URL || process.env.FIREFLY_TOKEN_API) {
+    envOverrides.firefly = {
+      baseUrl: process.env.FIREFLY_BASE_URL || config.get('firefly:baseUrl'),
+      tokenApi: process.env.FIREFLY_TOKEN_API || config.get('firefly:tokenApi'),
+    };
   }
-  if (process.env.FIREFLY_TOKEN_API) {
-    config.set('firefly:tokenApi', process.env.FIREFLY_TOKEN_API);
-  }
-  if (process.env.CRON) {
-    config.set('cron', process.env.CRON);
-  }
-  if (process.env.LOG_LEVEL) {
-    config.set('log:level', process.env.LOG_LEVEL);
+  if (process.env.CRON) envOverrides.cron = process.env.CRON;
+  if (process.env.LOG_LEVEL) envOverrides.log = { level: process.env.LOG_LEVEL };
+  if (Object.keys(envOverrides).length > 0) {
+    config.overrides(envOverrides);
   }
 
   config.required(['firefly', 'firefly:baseUrl', 'firefly:tokenApi', 'banks']);
