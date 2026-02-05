@@ -49,6 +49,29 @@
   "log": {
     "level": "info",
     "prettyPrint": true,
-    "redact": ["error.config.headers.Authorization"]
+    "redact": [
+      "error.config.headers.Authorization",
+      "banks[*].credentials",
+      "banks[*].credentials.username",
+      "banks[*].credentials.password",
+      "banks[*].credentials.id",
+      "banks[*].credentials.userCode",
+      "banks[*].credentials.card6Digits",
+      "banks[*].creditCards[*].credentials",
+      "banks[*].creditCards[*].credentials.username",
+      "banks[*].creditCards[*].credentials.password",
+      "banks[*].creditCards[*].credentials.id",
+      "banks[*].creditCards[*].credentials.card6Digits",
+      "firefly.tokenApi",
+      "*.password",
+      "*.credentials",
+      "*.tokenApi",
+      "*.token",
+      "*.secret",
+      "*.apiKey",
+      "error.*.password",
+      "error.*.credentials",
+      "error.*.tokenApi"
+    ]
   }
 }

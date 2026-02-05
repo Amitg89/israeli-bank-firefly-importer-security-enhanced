@@ -15,7 +15,8 @@
   },
   "bin": {
     "@itair86/israeli-bank-firefly-importer": "src/index.js",
-    "israeli-bank-firefly-importer": "src/index.js"
+    "israeli-bank-firefly-importer": "src/index.js",
+    "israeli-bank-firefly-encrypt": "src/cli-encrypt.js"
   },
   "author": "Itai Raz",
   "license": "MIT",
