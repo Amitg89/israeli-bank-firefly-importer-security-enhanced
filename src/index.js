@@ -27,11 +27,36 @@ async function run() {
   }
 }
 
+function logConfigSnapshot() {
+  const configFile = process.env.CONFIG_FILE || './config.yaml';
+  const scraper = config.get('scraper') || {};
+  const banks = config.get('banks') || [];
+  const snapshot = {
+    configFile,
+    scraperStartDate: scraper.startDate ?? null,
+    scraperTimeout: scraper.timeout ?? null,
+    banks: banks.map((b, i) => ({
+      index: i,
+      type: b.type,
+      startDate: b.startDate ?? null,
+      timeout: b.timeout ?? null,
+      creditCards: (b.creditCards || []).map((cc, j) => ({
+        index: j,
+        type: cc.type,
+        startDate: cc.startDate ?? null,
+        timeout: cc.timeout ?? null,
+      })),
+    })),
+  };
+  logger().info(snapshot, 'Config snapshot (startDate/timeout only)');
+}
+
 async function init() {
   const configFile = process.env.CONFIG_FILE || './config.yaml';
   await loadConfig(configFile);
   loggerInit();
   logger().debug(`Config file '${configFile}' loaded.`);
+  logConfigSnapshot();
 
   fireFlyInit();
 }
@@ -39,7 +64,14 @@ async function init() {
 try {
   await init();
   logger()
-    .info({ version: pkg.version }, 'Starting Israeli Bank Firefly iii Importer');
+    .info(
+      {
+        version: pkg.version,
+        features: ['per-account startDate', 'per-account timeout'],
+        configFile: process.env.CONFIG_FILE || './config.yaml',
+      },
+      'Starting Israeli Bank Firefly iii Importer',
+    );
   await run();
   const cron = config.get('cron');
   if (cron) {

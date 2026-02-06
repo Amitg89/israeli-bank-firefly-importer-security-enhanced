@@ -217,6 +217,12 @@ For Home Assistant integration, you'll need to:
 
 The original addon repository: [israeli-bank-firefly-importer-hass-addon](https://github.com/itairaz1/israeli-bank-firefly-importer-hass-addon)
 
+### Troubleshooting: which image and config is the addon using?
+
+- **Startup logs:** After the update, the addon logs a **"Config snapshot (startDate/timeout only)"** line and **"Starting Israeli Bank Firefly iii Importer"** with `version` and `configFile`. If you don't see `features: ["per-account startDate", "per-account timeout"]` or the config snapshot, the addon is still running an old image.
+- **Which image:** In Home Assistant, go to **Settings → Add-ons → [your addon] → Info** and check the version. To see the actual Docker image on the host: `docker ps` (note the container name for the addon), then `docker inspect <container_id> --format '{{.Config.Image}}'` or check **Settings → System → Add-ons → [addon] → Image**.
+- **Which config file:** The app uses `CONFIG_FILE` if set, else `./config.yaml`. The snapshot log shows the path used. Ensure the addon mounts or passes the config file you edited (e.g. `/config/config.encrypted.yaml`) and that `CONFIG_FILE` points to it if the addon sets it.
+
 ---
 
 ## Contributing
