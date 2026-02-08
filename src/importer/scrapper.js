@@ -122,18 +122,24 @@ export function getLightResult(results) {
   }));
 }
 
+// Default navigation timeout (ms) when not set - avoids 30s in Docker/HA
+const DEFAULT_SCRAPER_TIMEOUT_MS = 60000;
+
 export async function scrapAccounts(flatUsers) {
   const scraperConfig = config.get('scraper');
+  const globalTimeout = typeof scraperConfig.timeout === 'number' && scraperConfig.timeout > 0
+    ? scraperConfig.timeout
+    : DEFAULT_SCRAPER_TIMEOUT_MS;
   const actions = flatUsers
     .map((user) => {
+      const timeoutMs = typeof user.timeout === 'number' && user.timeout > 0
+        ? user.timeout
+        : globalTimeout;
       const options = {
         companyId: CompanyTypes[user.type],
         startDate: user.scrapFrom.toDate(),
         ...scraperConfig.options,
-        // Timeout: per-account overrides global (scrapers: max navigation ms, default 30000)
-        ...(typeof (user.timeout ?? scraperConfig.timeout) === 'number' && {
-          timeout: user.timeout ?? scraperConfig.timeout,
-        }),
+        timeout: timeoutMs,
       };
 
       return () => scrape(options, user.credentials);
@@ -146,7 +152,8 @@ function isTimeoutError(error) {
   if (!error) return false;
   const msg = (error.message || '').toLowerCase();
   const name = (error.name || '').toLowerCase();
-  return name === 'timeouterror' || msg.includes('timeout') || msg.includes('navigation timeout');
+  const str = String(error).toLowerCase();
+  return name === 'timeouterror' || msg.includes('timeout') || str.includes('timeout');
 }
 
 async function scrape(options, credentials) {
