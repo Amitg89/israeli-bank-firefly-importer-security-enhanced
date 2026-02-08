@@ -135,10 +135,13 @@ export async function scrapAccounts(flatUsers) {
       const timeoutMs = typeof user.timeout === 'number' && user.timeout > 0
         ? user.timeout
         : globalTimeout;
+      const baseOpts = scraperConfig.options || {};
+      const optInFeatures = [...(baseOpts.optInFeatures || []), 'isracard-amex:skipAdditionalTransactionInformation'];
       const options = {
         companyId: CompanyTypes[user.type],
         startDate: user.scrapFrom.toDate(),
-        ...scraperConfig.options,
+        ...baseOpts,
+        optInFeatures: [...new Set(optInFeatures)],
         timeout: timeoutMs,
       };
 
