@@ -8,7 +8,7 @@ This project is built upon the excellent work of **[Itai Raz](https://github.com
 
 **Original Project:** https://github.com/itairaz1/israeli-bank-firefly-importer
 
-The original project uses [Israeli Bank Scrapers](https://github.com/eshaham/israeli-bank-scrapers) by [Eran Shaham](https://github.com/eshaham) to scrape bank data and imports it into [Firefly III](https://www.firefly-iii.org/).
+The original project uses [Israeli Bank Scrapers](https://github.com/Amitg89/updated-Israeli-bank-scrapers) (updated fork with Isracard/Amex fixes) to scrape bank data and imports it into [Firefly III](https://www.firefly-iii.org/).
 
 ---
 
@@ -125,7 +125,7 @@ All features from the original project are preserved:
 - Max
 - Amex
 
-For the full support list, see the [Israeli Bank Scrapers documentation](https://github.com/eshaham/israeli-bank-scrapers#whats-here).
+For the full support list, see the [Israeli Bank Scrapers documentation](https://github.com/Amitg89/updated-Israeli-bank-scrapers#whats-here).
 
 ---
 

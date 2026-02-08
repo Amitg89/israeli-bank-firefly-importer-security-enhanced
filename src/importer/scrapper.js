@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-unresolved
 import { CompanyTypes, createScraper } from 'israeli-bank-scrapers';
 import config from 'nconf';
 import moment from 'moment';
@@ -129,7 +130,7 @@ export async function scrapAccounts(flatUsers) {
         companyId: CompanyTypes[user.type],
         startDate: user.scrapFrom.toDate(),
         ...scraperConfig.options,
-        // Timeout: per-account overrides global (israeli-bank-scrapers: max navigation ms, default 30000)
+        // Timeout: per-account overrides global (scrapers: max navigation ms, default 30000)
         ...(typeof (user.timeout ?? scraperConfig.timeout) === 'number' && {
           timeout: user.timeout ?? scraperConfig.timeout,
         }),

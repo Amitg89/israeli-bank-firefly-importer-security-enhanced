@@ -9,7 +9,7 @@ firefly:
 banks:
   # Type of the bank type (leumi, beinleumi, mizrahi, massad, yahav, 'otsar-hahayal', discount, 'beyahad-bishvilha', hapoalim)
   - type: leumi
-  # Bank credential in the following format based of the bank type: https://github.com/eshaham/israeli-bank-scrapers#specific-definitions-per-scraper
+  # Bank credential in the following format based of the bank type: https://github.com/Amitg89/updated-Israeli-bank-scrapers#specific-definitions-per-scraper
     credentials:
       username: 'my-username'
       password: 'my-password'
@@ -21,7 +21,7 @@ banks:
     creditCards:
       # Type of the credit card type (isracard, visaCal, max, amex)
       - type: isracard
-        # Credit card credential in the following format based of the credit card type: https://github.com/eshaham/israeli-bank-scrapers#specific-definitions-per-scraper
+        # Credit card credential in the following format based of the credit card type: https://github.com/Amitg89/updated-Israeli-bank-scrapers#specific-definitions-per-scraper
         credentials:
           id: '123456789'
           card6Digits: '123456'

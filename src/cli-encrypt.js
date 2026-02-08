@@ -123,26 +123,35 @@ async function promptMasterPassword(confirm = true) {
  * Counts encrypted fields in an object
  */
 function countEncryptedFields(obj, count = { encrypted: 0, total: 0 }) {
-  if (obj === null || obj === undefined) return count;
+  const result = { encrypted: count.encrypted, total: count.total };
+  if (obj === null || obj === undefined) return result;
 
   if (typeof obj === 'string') {
     if (isEncrypted(obj)) {
-      count.encrypted += 1;
+      result.encrypted += 1;
     }
-    return count;
+    return result;
   }
 
   if (Array.isArray(obj)) {
-    obj.forEach((item) => countEncryptedFields(item, count));
-    return count;
+    obj.forEach((item) => {
+      const next = countEncryptedFields(item, result);
+      result.encrypted = next.encrypted;
+      result.total = next.total;
+    });
+    return result;
   }
 
   if (typeof obj === 'object') {
-    Object.values(obj).forEach((value) => countEncryptedFields(value, count));
-    return count;
+    Object.values(obj).forEach((value) => {
+      const next = countEncryptedFields(value, result);
+      result.encrypted = next.encrypted;
+      result.total = next.total;
+    });
+    return result;
   }
 
-  return count;
+  return result;
 }
 
 /**

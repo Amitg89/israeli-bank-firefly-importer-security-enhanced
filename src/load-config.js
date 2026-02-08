@@ -132,7 +132,8 @@ export default async function loadConfig(path) {
     })
     .defaults(require('../config/default.json'));
 
-  // Apply env as top-priority overrides so addon/Docker env vars are always used (nconf .set() is not reliable across the chain)
+  // Apply env as top-priority overrides so addon/Docker env vars are always used
+  // (nconf .set() is not reliable across the chain)
   const envOverrides = {};
   if (process.env.FIREFLY_BASE_URL || process.env.FIREFLY_TOKEN_API) {
     envOverrides.firefly = {
