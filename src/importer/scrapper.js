@@ -142,16 +142,27 @@ export async function scrapAccounts(flatUsers) {
   return runActions(actions, scraperConfig.parallel);
 }
 
+function isTimeoutError(error) {
+  if (!error) return false;
+  const msg = (error.message || '').toLowerCase();
+  const name = (error.name || '').toLowerCase();
+  return name === 'timeouterror' || msg.includes('timeout') || msg.includes('navigation timeout');
+}
+
 async function scrape(options, credentials) {
   const scraper = createScraper(options);
   logger().debug({ options }, 'Scrapping...');
   try {
     return await scraper.scrape(credentials);
   } catch (error) {
-    logger().error({ error, options }, 'Unexpected error while scrapping');
+    const isTimeout = isTimeoutError(error);
+    logger().error(
+      { error, options, errorType: isTimeout ? 'TIMEOUT' : 'GENERAL_ERROR' },
+      isTimeout ? 'Scraping timed out (increase scraper_timeout in addon or scraper.timeout in config)' : 'Unexpected error while scrapping',
+    );
     return {
       success: false,
-      errorType: 'GENERAL_ERROR',
+      errorType: isTimeout ? 'TIMEOUT' : 'GENERAL_ERROR',
       errorMessage: error.message,
     };
   }

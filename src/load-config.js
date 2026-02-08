@@ -145,9 +145,11 @@ export default async function loadConfig(path) {
   if (process.env.LOG_LEVEL) envOverrides.log = { level: process.env.LOG_LEVEL };
   if (process.env.SCRAPER_TIMEOUT || process.env.SCRAPER_START_DATE) {
     const base = envOverrides.scraper || config.get('scraper') || {};
+    const raw = process.env.SCRAPER_TIMEOUT;
+    const parsedTimeout = raw ? parseInt(raw, 10) : undefined;
     envOverrides.scraper = {
       ...base,
-      ...(process.env.SCRAPER_TIMEOUT && { timeout: parseInt(process.env.SCRAPER_TIMEOUT, 10) }),
+      ...(Number.isFinite(parsedTimeout) && parsedTimeout > 0 && { timeout: parsedTimeout }),
       ...(process.env.SCRAPER_START_DATE && { startDate: process.env.SCRAPER_START_DATE }),
     };
   }
