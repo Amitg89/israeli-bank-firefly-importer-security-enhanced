@@ -1,4 +1,5 @@
 {
+  "reconcileBalance": true,
   "firefly": {
     "limit": 1000
   },

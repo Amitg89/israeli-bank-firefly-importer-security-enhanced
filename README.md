@@ -106,6 +106,19 @@ All features from the original project are preserved:
 2. Incremental imports - only missing transactions are imported
 3. Automatic credit card transfer transaction handling
 4. CRON scheduling for periodic imports
+5. Balance reconciliation (see below)
+
+## Balance reconciliation
+
+After each import, the importer compares the scraped real bank balance against the balance Firefly III has computed from transactions. When a discrepancy is detected, the importer automatically creates a Firefly `reconciliation` transaction tagged `balance-adjustment` to close the gap — so your Firefly account balance stays in sync with your actual bank balance without manual intervention.
+
+Credit card accounts (which have no real-time balance) are skipped automatically.
+
+To disable automatic reconciliation and only log a warning instead, set `reconcileBalance: false` in your `config.yaml`:
+
+```yaml
+reconcileBalance: false
+```
 
 ## Supported Accounts
 

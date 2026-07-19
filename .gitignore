@@ -2,3 +2,6 @@
 node_modules
 config/local*.yaml
 config.yaml
+.DS_Store
+config/config.encrypted.yaml
+config/*.encrypted.yaml

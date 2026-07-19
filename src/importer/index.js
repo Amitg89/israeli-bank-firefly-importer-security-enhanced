@@ -140,7 +140,7 @@ export default async function doImport(options) {
   }
 
   const accountsBalance = await getFireflyAccountsBalance();
-  logBalanceOutOfSync(accountsBalance, accounts);
+  await reconcileBalances(accountsBalance, accounts);
 
   logger().info('Updating last import...');
   const scrappedUsers = getSuccessfulScrappedUsers(scrapResult, flatUsers);
@@ -187,25 +187,69 @@ async function getFireflyAccountsBalance() {
   const rawAccounts = await getAccounts();
   return rawAccounts.data.data
     .map((x) => ({
+      id: x.id,
       accountNumber: x.attributes.account_number,
       balance: parseFloat(x.attributes.current_balance),
     }));
 }
 
-function logBalanceOutOfSync(fireflyAccounts, scrapeAccounts) {
+const round2 = (n) => Math.round(n * 100) / 100;
+
+async function reconcileBalances(fireflyAccounts, scrapeAccounts) {
   const fireflyAccountsBalanceMap = fireflyAccounts
     .reduce((m, x) => ({
       ...m,
-      [x.accountNumber]: x.balance,
+      [x.accountNumber]: { id: x.id, balance: x.balance },
     }), {});
-  scrapeAccounts
+
+  const toReconcile = scrapeAccounts
     .map((x) => ({
       accountNumber: x.accountNumber,
       scrapeBalance: x.balance,
-      fireflyBalance: fireflyAccountsBalanceMap[x.accountNumber],
+      fireflyEntry: fireflyAccountsBalanceMap[x.accountNumber],
     }))
-    .filter((x) => x.scrapeBalance && x.scrapeBalance !== x.fireflyBalance)
-    .forEach((x) => logger().warn(x, 'Non synced balance'));
+    .filter((x) => typeof x.scrapeBalance === 'number' && x.fireflyEntry)
+    .map((x) => ({
+      accountNumber: x.accountNumber,
+      scrapeBalance: x.scrapeBalance,
+      fireflyBalance: x.fireflyEntry.balance,
+      fireflyId: x.fireflyEntry.id,
+      diff: round2(x.scrapeBalance - x.fireflyEntry.balance),
+    }))
+    .filter((x) => Math.abs(x.diff) >= 0.01);
+
+  const today = moment().format('YYYY-MM-DD');
+
+  return toReconcile.reduce((p, x) => p.then(async () => {
+    const {
+      accountNumber, scrapeBalance, fireflyBalance, fireflyId, diff,
+    } = x;
+    logger().warn({ accountNumber, scrapeBalance, fireflyBalance }, 'Non synced balance');
+
+    if (!config.get('reconcileBalance')) {
+      return;
+    }
+
+    const tx = {
+      type: 'reconciliation',
+      date: today,
+      amount: Math.abs(diff).toFixed(2),
+      description: `Balance adjustment (importer) ${today}`,
+      ...(diff > 0
+        ? { destination_id: fireflyId }
+        : { source_id: fireflyId }),
+      tags: ['balance-adjustment'],
+    };
+
+    try {
+      await createTx([tx]);
+      logger().info({
+        accountNumber, fireflyBalance, scrapeBalance, diff,
+      }, 'Created balance adjustment');
+    } catch (e) {
+      logger().error({ message: e?.response?.data?.message, error: e, accountNumber }, 'Error creating balance adjustment');
+    }
+  }), Promise.resolve());
 }
 
 async function createAndMapAccounts(scrapperAccounts) {
