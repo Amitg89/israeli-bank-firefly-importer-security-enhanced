@@ -41,7 +41,8 @@
       "args": [
         "--disable-dev-shm-usage",
         "--no-sandbox",
-        "--disable-gpu"
+        "--disable-gpu",
+        "--disable-blink-features=AutomationControlled"
       ],
       "combineInstallments": false,
       "showBrowser": false,
