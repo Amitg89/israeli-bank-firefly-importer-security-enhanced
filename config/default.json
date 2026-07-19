@@ -9,36 +9,40 @@
     "visaCal": "identifier"
   },
   "currencySymbolMap": {
-    "₪": "ILS",
+    "\u20aa": "ILS",
     "$": "USD",
-    "€": "EUR"
+    "\u20ac": "EUR"
   },
   "creditCardDesc": [
     {
-      "desc": "ל.מאסטרקרד(יש)",
+      "desc": "\u05dc.\u05de\u05d0\u05e1\u05d8\u05e8\u05e7\u05e8\u05d3(\u05d9\u05e9)",
       "creditCard": "isracard"
     },
     {
-      "desc": "ישראכרט-י",
+      "desc": "\u05d9\u05e9\u05e8\u05d0\u05db\u05e8\u05d8-\u05d9",
       "creditCard": "isracard"
     },
     {
-      "desc": "ויזה כ.א.ל-י",
+      "desc": "\u05d5\u05d9\u05d6\u05d4 \u05db.\u05d0.\u05dc-\u05d9",
       "creditCard": "visaCal"
     },
     {
-      "desc": "כרטיסי אשראי-י",
+      "desc": "\u05db\u05e8\u05d8\u05d9\u05e1\u05d9 \u05d0\u05e9\u05e8\u05d0\u05d9-\u05d9",
       "creditCard": "visaCal"
     },
     {
-      "desc": "מקס איט פיננ-י",
+      "desc": "\u05de\u05e7\u05e1 \u05d0\u05d9\u05d8 \u05e4\u05d9\u05e0\u05e0-\u05d9",
       "creditCard": "max"
     }
   ],
   "scraper": {
     "parallel": true,
     "options": {
-      "args": [],
+      "args": [
+        "--disable-dev-shm-usage",
+        "--no-sandbox",
+        "--disable-gpu"
+      ],
       "combineInstallments": false,
       "showBrowser": false,
       "outputData": {
