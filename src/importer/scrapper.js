@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+import path from 'node:path';
 // eslint-disable-next-line import/no-unresolved
 import { CompanyTypes, createScraper } from 'israeli-bank-scrapers';
 import config from 'nconf';
@@ -144,6 +146,15 @@ export async function scrapAccounts(flatUsers) {
         optInFeatures: [...new Set(optInFeatures)],
         timeout: timeoutMs,
       };
+      if (!options.storeFailureScreenShotPath && process.env.CONFIG_FILE) {
+        const debugDir = path.join(path.dirname(process.env.CONFIG_FILE), 'debug');
+        try {
+          fs.mkdirSync(debugDir, { recursive: true });
+          options.storeFailureScreenShotPath = path.join(debugDir, `${user.type}-fail.png`);
+        } catch (e) {
+          logger().debug({ e }, 'Could not create debug directory, failure capture disabled');
+        }
+      }
 
       return () => scrape(options, user.credentials);
     });
@@ -159,17 +170,35 @@ function isTimeoutError(error) {
   return name === 'timeouterror' || msg.includes('timeout') || str.includes('timeout');
 }
 
+// Surface the scraper's debug capture (console/network log written next to the
+// failure screenshot) into the importer's own log, so it is visible via the HA
+// add-on log without needing file access to /config.
+function logDebugCapture(options) {
+  if (!options.storeFailureScreenShotPath) return;
+  const debugLogPath = path.join(path.dirname(options.storeFailureScreenShotPath), 'discount-debug.log');
+  try {
+    if (!fs.existsSync(debugLogPath)) return;
+    const tail = fs.readFileSync(debugLogPath, 'utf8').split('\n').slice(-100).join('\n');
+    logger().warn({ companyId: options.companyId }, `Scraper debug capture tail (${debugLogPath}):\n${tail}`);
+  } catch (e) {
+    logger().debug({ e }, 'Could not read scraper debug capture');
+  }
+}
+
 async function scrape(options, credentials) {
   const scraper = createScraper(options);
   logger().debug({ options }, 'Scrapping...');
   try {
-    return await scraper.scrape(credentials);
+    const result = await scraper.scrape(credentials);
+    if (!result.success) logDebugCapture(options);
+    return result;
   } catch (error) {
     const isTimeout = isTimeoutError(error);
     logger().error(
       { error, options, errorType: isTimeout ? 'TIMEOUT' : 'GENERAL_ERROR' },
       isTimeout ? 'Scraping timed out (increase scraper_timeout in addon or scraper.timeout in config)' : 'Unexpected error while scrapping',
     );
+    logDebugCapture(options);
     return {
       success: false,
       errorType: isTimeout ? 'TIMEOUT' : 'GENERAL_ERROR',
