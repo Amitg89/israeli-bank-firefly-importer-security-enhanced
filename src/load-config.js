@@ -143,14 +143,23 @@ export default async function loadConfig(path) {
   }
   if (process.env.CRON) envOverrides.cron = process.env.CRON;
   if (process.env.LOG_LEVEL) envOverrides.log = { level: process.env.LOG_LEVEL };
-  if (process.env.SCRAPER_TIMEOUT || process.env.SCRAPER_START_DATE) {
+  if (process.env.SCRAPER_TIMEOUT || process.env.SCRAPER_START_DATE
+    || process.env.SCRAPER_BROWSER_WS_ENDPOINT) {
     const base = envOverrides.scraper || config.get('scraper') || {};
     const raw = process.env.SCRAPER_TIMEOUT;
     const parsedTimeout = raw ? parseInt(raw, 10) : undefined;
+    const wsEndpoint = process.env.SCRAPER_BROWSER_WS_ENDPOINT?.trim();
+    const options = base.options || {};
     envOverrides.scraper = {
       ...base,
       ...(Number.isFinite(parsedTimeout) && parsedTimeout > 0 && { timeout: parsedTimeout }),
       ...(process.env.SCRAPER_START_DATE && { startDate: process.env.SCRAPER_START_DATE }),
+      ...(wsEndpoint && {
+        options: {
+          ...options,
+          browserWSEndpoint: wsEndpoint,
+        },
+      }),
     };
   }
   if (Object.keys(envOverrides).length > 0) {

@@ -33,6 +33,10 @@ scraper:
   timeout: 60000
   # Optional: global start date (ISO) to limit how far back to scrape.
   # startDate: '2025-01-01'
+  options:
+    # Optional: connect to a remote browser (e.g. Browserless) over WebSocket instead of
+    # launching local Chromium. Also settable via SCRAPER_BROWSER_WS_ENDPOINT env var.
+    # browserWSEndpoint: 'ws://homeassistant.local:3000?token=YOUR_TOKEN&timeout=300000'
 
 log:
   level: debug
