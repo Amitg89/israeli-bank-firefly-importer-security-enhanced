@@ -189,6 +189,9 @@ async function getFireflyAccountsBalance() {
     .map((x) => ({
       id: x.id,
       accountNumber: x.attributes.account_number,
+      name: x.attributes.name,
+      role: x.attributes.account_role,
+      currencyCode: x.attributes.currency_code,
       balance: parseFloat(x.attributes.current_balance),
     }));
 }
@@ -199,7 +202,7 @@ async function reconcileBalances(fireflyAccounts, scrapeAccounts) {
   const fireflyAccountsBalanceMap = fireflyAccounts
     .reduce((m, x) => ({
       ...m,
-      [x.accountNumber]: { id: x.id, balance: x.balance },
+      [x.accountNumber]: x,
     }), {});
 
   const toReconcile = scrapeAccounts
@@ -209,11 +212,20 @@ async function reconcileBalances(fireflyAccounts, scrapeAccounts) {
       fireflyEntry: fireflyAccountsBalanceMap[x.accountNumber],
     }))
     .filter((x) => typeof x.scrapeBalance === 'number' && x.fireflyEntry)
+    // Only bank accounts (defaultAsset) are reconciled. Credit cards (ccAsset)
+    // report the CURRENT CYCLE balance from the scraper while Firefly holds the
+    // lifetime transaction sum — "reconciling" them would post huge bogus
+    // adjustments (observed: ~82K ILS on one card).
+    .filter((x) => x.fireflyEntry.role === 'defaultAsset')
     .map((x) => ({
       accountNumber: x.accountNumber,
       scrapeBalance: x.scrapeBalance,
       fireflyBalance: x.fireflyEntry.balance,
       fireflyId: x.fireflyEntry.id,
+      // Firefly's hidden per-asset reconciliation account, addressed by its
+      // conventional name. It must exist (Firefly's API can neither create nor
+      // auto-resolve it — see docs/reconciliation.md).
+      reconAccountName: `${x.fireflyEntry.name} reconciliation (${x.fireflyEntry.currencyCode})`,
       diff: round2(x.scrapeBalance - x.fireflyEntry.balance),
     }))
     .filter((x) => Math.abs(x.diff) >= 0.01);
@@ -222,7 +234,7 @@ async function reconcileBalances(fireflyAccounts, scrapeAccounts) {
 
   return toReconcile.reduce((p, x) => p.then(async () => {
     const {
-      accountNumber, scrapeBalance, fireflyBalance, fireflyId, diff,
+      accountNumber, scrapeBalance, fireflyBalance, fireflyId, reconAccountName, diff,
     } = x;
     logger().warn({ accountNumber, scrapeBalance, fireflyBalance }, 'Non synced balance');
 
@@ -236,8 +248,8 @@ async function reconcileBalances(fireflyAccounts, scrapeAccounts) {
       amount: Math.abs(diff).toFixed(2),
       description: `Balance adjustment (importer) ${today}`,
       ...(diff > 0
-        ? { destination_id: fireflyId }
-        : { source_id: fireflyId }),
+        ? { destination_id: fireflyId, source_name: reconAccountName }
+        : { source_id: fireflyId, destination_name: reconAccountName }),
       tags: ['balance-adjustment'],
     };
 
